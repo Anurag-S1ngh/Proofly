@@ -36,14 +36,22 @@ model Project {
 }
 
 //submitted at
+// type - text or video
 model Testimonial {
   id            Int      @id @default(autoincrement())
-  description   String
+  description   String?
   user          User     @relation(fields: [userId], references: [id])
+  videoURL      String?  @unique
+  type          Type     @default(text)
   userId        String
   stars         Int
   project       Project  @relation(fields: [projectLinkId], references: [linkId])
   projectLinkId String
   inWallOfFame  Boolean  @default(false)
   sumbttedAt    DateTime @default(now())
+}
+
+enum Type {
+  video
+  text
 }

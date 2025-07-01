@@ -1,4 +1,5 @@
 "use client";
+import Footer from "@/components/footer";
 import { NavBar } from "@/components/nav-bar";
 import { SpaceCreationHandler } from "@/util/util";
 import {
@@ -6,7 +7,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -14,9 +14,15 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { ArrowUpRight, CopyIcon, ThumbsUp } from "lucide-react";
+import {
+  AlertCircleIcon,
+  ArrowUpRight,
+  CopyIcon,
+  ThumbsUp,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 export default function Space() {
   const [linkId, setLinkId] = useState("");
@@ -34,11 +40,18 @@ export default function Space() {
   async function SpaceCreation() {
     if (
       !spaceNameRef.current ||
+      spaceNameRef.current.value === "" ||
       testimonialTitle === "" ||
       testimonialDescription === "" ||
       testimonialQuestion === ""
     ) {
-      alert("Enter all fields");
+      toast(
+        <span className="flex items-center gap-2">
+          <AlertCircleIcon className="mr-2" size={40} />
+          Oops! Looks like you missed a field. Please fill out all the details.
+        </span>,
+      );
+      //alert("Enter all fields");
       return;
     }
     const response = await SpaceCreationHandler(
@@ -81,11 +94,11 @@ export default function Space() {
         </AlertDialogContent>
       </AlertDialog>
       <NavBar />
-      <div className="flex gap-20 lg:px-16 px-4 py-3">
+      <div className="flex gap-20 lg:px-16 px-4 py-3 mt-4">
         <div className="flex-1 flex flex-col w-full gap-5">
           <div>
             <h3 className="text-base font-bold text-neutral-400 mb-2">
-              Space Name
+              Workspace Name
             </h3>
             <Input
               ref={spaceNameRef}
@@ -95,7 +108,7 @@ export default function Space() {
           </div>
           <div>
             <h3 className="text-base font-bold text-neutral-400 mb-2">
-              Testimonial Title
+              Testimonial Headline
             </h3>
             <Input
               onChange={(e) => {
@@ -107,7 +120,7 @@ export default function Space() {
           </div>
           <div>
             <h3 className="text-base font-bold text-neutral-400 mb-2">
-              Testimonial Description
+              Testimonial Message
             </h3>
             <Input
               onChange={(e) => {
@@ -119,7 +132,7 @@ export default function Space() {
           </div>
           <div>
             <h3 className="text-base font-bold text-neutral-400 mb-2">
-              Questions
+              Questions to Ask
             </h3>
             <Textarea
               className="resize-none placeholder:text-neutral-400"
@@ -175,6 +188,7 @@ export default function Space() {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

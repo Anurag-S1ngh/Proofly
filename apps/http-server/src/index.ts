@@ -14,10 +14,35 @@ app.use(express.json());
 app.use(cors());
 
 app.post("/signup", async (req: Request, res: Response) => {
-  const isValidData = SignUpSchema.safeParse(req.body);
-  if (!isValidData.success) {
+  const result = SignUpSchema.safeParse(req.body);
+  if (!result.success) {
+    let zodError;
+    result.error.issues.forEach((issue) => {
+      if (
+        issue.message ===
+        "Password must include uppercase, lowercase, number, and special character (min 8 characters)"
+      ) {
+        zodError = issue.message;
+      } else if (issue.message === "Password must be at least 8 characters") {
+        zodError = issue.message;
+      } else if (issue.message === "Invalid email address") {
+        zodError = issue.message;
+      } else if (issue.message === "Last name must be at least 2 characters") {
+        zodError = issue.message;
+      } else if (
+        issue.message === "Last name must be less than 50 characters"
+      ) {
+        zodError = issue.message;
+      } else if (issue.message === "First name must be at least 2 characters") {
+        zodError = issue.message;
+      } else if (
+        issue.message === "First name must be less than 50 characters"
+      ) {
+        zodError = issue.message;
+      }
+    });
     res.status(422).json({
-      msg: "invalid data",
+      msg: zodError,
     });
     return;
   }
@@ -35,20 +60,39 @@ app.post("/signup", async (req: Request, res: Response) => {
     res.json({
       msg: "sign up successful",
     });
-  } catch (error) {
-    console.log("error while sign up: ", error);
-    res.status(503).json({
-      msg: "try again later",
-    });
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      res.status(400).json({
+        msg: "Email already in use",
+      });
+    } else {
+      console.error("error while sign up:", error);
+      res.status(503).json({
+        msg: "Try again later",
+      });
+    }
   }
   return;
 });
 
 app.post("/signin", async (req: Request, res: Response) => {
-  const isValidData = SignInSchema.safeParse(req.body);
-  if (!isValidData.success) {
+  const result = SignInSchema.safeParse(req.body);
+  if (!result.success) {
+    let zodError;
+    result.error.issues.forEach((issue) => {
+      if (issue.message === "Invalid email address") {
+        zodError = issue.message;
+      } else if (issue.message === "Password must be at least 8 characters") {
+        zodError = issue.message;
+      } else if (
+        issue.message ===
+        "Password must include uppercase, lowercase, number, and special character (min 8 characters)"
+      ) {
+        zodError = issue.message;
+      }
+    });
     res.status(422).json({
-      msg: "invalid data",
+      msg: zodError,
     });
     return;
   }
@@ -67,7 +111,7 @@ app.post("/signin", async (req: Request, res: Response) => {
     }
     const isValidePassword = await bcrypt.compare(password, user.password);
     if (!isValidePassword) {
-      res.json({
+      res.status(401).json({
         msg: "invalid password",
       });
       return;
@@ -122,10 +166,15 @@ app.post("/space", Authentication, async (req: Request, res: Response) => {
   return;
 });
 
+// to collect testimonials
 app.post("/:linkId", Authentication, async (req: Request, res: Response) => {
   const linkId = req.params.linkId;
   const userId = req.userId;
-  const { description, stars } = req.body;
+  const { description, stars, id, type } = req.body;
+  let videoURL;
+  if (id) {
+    videoURL = `${process.env.CLOUD_FRONT_URL}/${id}.webm`;
+  }
   if (!linkId) {
     return;
   }
@@ -139,6 +188,8 @@ app.post("/:linkId", Authentication, async (req: Request, res: Response) => {
     await prisma.testimonial.create({
       data: {
         userId,
+        videoURL,
+        type,
         stars,
         projectLinkId: linkId,
         description,
@@ -243,9 +294,11 @@ app.get(
             select: {
               id: true,
               description: true,
+              type: true,
               stars: true,
               sumbttedAt: true,
               inWallOfFame: true,
+              videoURL: true,
               user: {
                 select: {
                   firstName: true,
@@ -269,24 +322,64 @@ app.get(
   },
 );
 
-app.post("/walloffame/:id", async (req: Request, res: Response) => {
-  const testimonialId = req.params.id;
-  const inWallOfFame: boolean = req.body.inWallOfFame;
+app.post(
+  "/walloffame/:id",
+  Authentication,
+  async (req: Request, res: Response) => {
+    const testimonialId = req.params.id;
+    const inWallOfFame: boolean = req.body.inWallOfFame;
+    try {
+      const test = await prisma.testimonial.update({
+        where: {
+          id: parseInt(testimonialId!),
+        },
+        data: {
+          inWallOfFame: inWallOfFame,
+        },
+      });
+      res.json({
+        msg: "wall of fame updated",
+        test,
+      });
+    } catch (error) {
+      console.log("error while updating wall of fame: ", error);
+      res.status(503).json({
+        msg: "try again later",
+      });
+    }
+    return;
+  },
+);
+
+app.get("/walloffame/:id", async (req: Request, res: Response) => {
+  const projectLinkId = req.params.id;
   try {
-    const test = await prisma.testimonial.update({
+    const wallOfFame = await prisma.testimonial.findMany({
       where: {
-        id: parseInt(testimonialId!),
+        projectLinkId,
+        inWallOfFame: true,
       },
-      data: {
-        inWallOfFame: inWallOfFame,
+      select: {
+        id: true,
+        description: true,
+        type: true,
+        stars: true,
+        inWallOfFame: true,
+        videoURL: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
     res.json({
-      msg: "wall of fame updated",
-      test,
+      msg: "wallofFame fetched",
+      wallOfFame,
     });
   } catch (error) {
-    console.log("error while updating wall of fame: ", error);
+    console.log("error while fetching wall of fame: ", error);
     res.status(503).json({
       msg: "try again later",
     });
@@ -294,17 +387,23 @@ app.post("/walloffame/:id", async (req: Request, res: Response) => {
   return;
 });
 
-app.get("/url", (req, res) => {
-  createPresignedUrl({
-    region: "ap-south-1",
-    bucket: "testimonials1829",
-    key: "uploads/video.mp4",
-  }).then((url) => {
-    console.log("Presigned URL:", url);
-  });
-  res.json({
-    msg: "",
-  });
+app.get("/url", Authentication, async (_req: Request, res: Response) => {
+  const id = Date.now();
+  try {
+    const url = await createPresignedUrl({
+      region: "ap-south-1",
+      bucket: "testimonials1829",
+      key: `uploads/${id}.webm`,
+    });
+    res.json({
+      msg: "url generated",
+      url,
+      id,
+    });
+  } catch (error) {
+    console.log("error while generating url: ", error);
+    res.status(503).json({ msg: "try again later" });
+  }
 });
 
 app.listen(3001);

@@ -10,6 +10,8 @@ export interface TestimonialInterface {
   sumbttedAt: string;
   user: UserInterface;
   inWallOfFame: boolean;
+  videoURL: string | undefined;
+  type: string | undefined;
 }
 
 export interface SpaceInterface {
