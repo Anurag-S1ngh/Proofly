@@ -53,7 +53,19 @@ export default function Page() {
   return (
     <>
       <NavBar />
-      <div className="bg-[radial-gradient(#ccc_0.5px,transparent_0.5px)] bg-[length:10px_10px]">
+      <div className="min-h-screen w-full relative">
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            backgroundImage: `
+        linear-gradient(to right, rgba(229,231,235,0.8) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(229,231,235,0.8) 1px, transparent 1px),
+        radial-gradient(circle 500px at 20% 20%, rgba(139,92,246,0.3), transparent),
+        radial-gradient(circle 500px at 80% 80%, rgba(59,130,246,0.3), transparent)
+      `,
+            backgroundSize: "48px 48px, 48px 48px, 100% 100%, 100% 100%",
+          }}
+        />
         <div className="flex flex-col gap-5 items-center justify-center min-h-screen w-full pt-20 px-4 -mt-20">
           <h1 className="lg:text-6xl text-5xl font-bold text-center tracking-tight capitalize ">
             Get testimonials

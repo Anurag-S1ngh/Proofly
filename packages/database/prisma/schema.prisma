@@ -35,8 +35,6 @@ model Project {
   testimonials           Testimonial[]
 }
 
-//submitted at
-// type - text or video
 model Testimonial {
   id            Int      @id @default(autoincrement())
   description   String?

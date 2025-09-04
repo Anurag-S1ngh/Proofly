@@ -8,7 +8,7 @@ export async function SignUpHandler(
 ) {
   try {
     const response = await axios.post(
-      process.env.NEXT_PUBLIC_HTTP_URL! + "/signup",
+      process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/auth/signup",
       {
         firstName,
         lastName,
@@ -32,7 +32,7 @@ export async function SignUpHandler(
 export async function SignInHandler(email: string, password: string) {
   try {
     const response = await axios.post(
-      process.env.NEXT_PUBLIC_HTTP_URL! + "/signin",
+      process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/auth/signin",
       {
         email,
         password,
@@ -59,7 +59,7 @@ export async function SpaceCreationHandler(
   question: string,
 ) {
   const response = await axios.post(
-    process.env.NEXT_PUBLIC_HTTP_URL! + "/space",
+    process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/space",
     {
       testimonialTitle,
       testimonialDescription,
@@ -80,7 +80,7 @@ export async function SpaceCreationHandler(
 
 export async function GetSpaceQuestion(linkId: string) {
   const response = await axios.get(
-    process.env.NEXT_PUBLIC_HTTP_URL! + "/space/" + linkId,
+    process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/space/" + linkId,
     {
       headers: {
         Authorization: localStorage.getItem("Authorization"),
@@ -112,7 +112,7 @@ export async function GetSpaceDetails(linkId: string) {
 export async function GetAllSpacesDetails() {
   try {
     const response = await axios.get(
-      process.env.NEXT_PUBLIC_HTTP_URL! + "/all-spaces",
+      process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/all-spaces",
       {
         headers: {
           Authorization: localStorage.getItem("Authorization"),
@@ -137,7 +137,7 @@ export async function SubmitTestimonialHandler(
   description?: string,
 ) {
   const response = await axios.post(
-    process.env.NEXT_PUBLIC_HTTP_URL! + "/" + linkId,
+    process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/" + linkId,
     {
       description,
       id,
@@ -161,7 +161,7 @@ export async function UpdateWallOfFame(
   inWallOfFame: boolean,
 ) {
   const response = await axios.post(
-    process.env.NEXT_PUBLIC_HTTP_URL! + "/walloffame/" + testimonialId,
+    process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/walloffame/" + testimonialId,
     {
       inWallOfFame,
     },
@@ -179,7 +179,7 @@ export async function UpdateWallOfFame(
 
 export async function GetWallOfFame(userId: string) {
   const response = await axios.get(
-    process.env.NEXT_PUBLIC_HTTP_URL! + "/walloffame/" + userId,
+    process.env.NEXT_PUBLIC_HTTP_URL! + "/api/v1/walloffame/" + userId,
   );
   if (response.data.msg === "wallofFame fetched") {
     return response.data.wallOfFame;

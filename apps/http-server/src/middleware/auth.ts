@@ -1,8 +1,9 @@
-import { NextFunction, Response, Request } from "express";
+import { NextFunction, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { CustomExpressRequest } from "../util/util";
 
 export function Authentication(
-  req: Request,
+  req: CustomExpressRequest,
   res: Response,
   next: NextFunction,
 ) {
